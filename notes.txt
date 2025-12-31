@@ -1,0 +1,34 @@
+
+
+POPUPS:
+- Discography 
+    - With an extra blurb about his artist statement 
+- Contact
+
+
+FORMS: 
+#1 Newsletter signup 
+       Let's stay connected.
+            I’ll send you updates on shows, projects, and whatever I’m thinking about musically.            - text field: #email-address
+            - field: #email-address (with ghost field: put your email@ here)
+            - button:  signup 
+
+#2 'Contact me' (lessons, bookings, questions)
+    Get in touch with me (:
+        For lessons, bookings, or other general questions.
+
+- options: lessons, booking, inquiry 
+- field: #email-address
+- checkbox: sign me up for the newsletter
+- field: any notes?
+
+if 'lessons'
+    - more options appear:
+        - 
+
+
+###### REVIEW w/ Michael:
+
+- Order of top menu items
+- Order of items 
+- Portfolio or Discography?
