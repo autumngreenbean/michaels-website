@@ -12,7 +12,7 @@
 
 const CONFIG = {
   // Replace this with your deployed Google Apps Script Web App URL
-  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzobJsLw3arG2Mon8lXKTkxbLd12D7_l9ACR5_59KbWxThpFINRtXFvLIwmVqGDYZM/exec',
+  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzjB5CXwU_k9RVgpf8FXb91JRfqrx3Q8R0_6gbcpWU4HSJKciXVAsyJebuWCHxj9XUT/exec',
   
   // Cache duration in milliseconds (5 minutes default)
   CACHE_DURATION: 5 * 60 * 1000,

@@ -196,37 +196,50 @@ function doGet(e) {
   const action = e.parameter.action || 'getAllData';
   
   try {
+    let result;
+    
     switch(action) {
       case 'getAllData':
-        return ContentService.createTextOutput(JSON.stringify(getAllData()))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getAllData();
+        break;
       
       case 'getBiography':
-        return ContentService.createTextOutput(JSON.stringify(getBiography()))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getBiography();
+        break;
       
       case 'getDiscography':
-        return ContentService.createTextOutput(JSON.stringify(getDiscography()))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getDiscography();
+        break;
       
       case 'getEvents':
-        return ContentService.createTextOutput(JSON.stringify(getEvents()))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getEvents();
+        break;
       
       case 'getVideos':
-        return ContentService.createTextOutput(JSON.stringify(getVideos()))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getVideos();
+        break;
       
       default:
-        return ContentService.createTextOutput(JSON.stringify({
-          error: 'Invalid action'
-        })).setMimeType(ContentService.MimeType.JSON);
+        result = { error: 'Invalid action' };
     }
+    
+    // Return with CORS headers
+    return createCorsResponse(result);
   } catch(error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      error: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse({ error: error.toString() });
   }
+}
+
+/**
+ * Create a response with CORS headers to allow cross-origin requests
+ */
+function createCorsResponse(data) {
+  const output = ContentService.createTextOutput(JSON.stringify(data));
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  // Note: Apps Script Web Apps automatically handle CORS when deployed as "Anyone"
+  // But we return proper JSON format
+  return output;
 }
 
 function doPost(e) {

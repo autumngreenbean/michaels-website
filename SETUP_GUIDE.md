@@ -246,7 +246,32 @@ Upload these files to your web server:
 
 ### Problem: CORS errors in console
 
-This is normal! The form submission uses `no-cors` mode, which means you won't see the response but it still works. Check your Google Sheet to verify submissions.
+**Error message:**
+```
+Access to fetch at 'https://script.google.com/...' has been blocked by CORS policy
+```
+
+**This means the deployment wasn't set up correctly. Solutions:**
+
+1. **Create a NEW deployment** (don't edit the old one):
+   - Open Apps Script editor
+   - Click **Deploy** > **New deployment**
+   - Select type: **Web app**
+   - **Execute as**: **Me** (critical!)
+   - **Who has access**: **Anyone** (critical for CORS!)
+   - Click **Deploy**
+   - Copy the NEW URL and update `js/config.js`
+
+2. **Verify deployment settings:**
+   - Click **Deploy** > **Manage deployments**
+   - Check that "Who has access" is set to **Anyone**
+   - If not, archive it and create a new deployment
+
+3. **After updating:**
+   - Clear browser cache
+   - Hard refresh your website (Ctrl+Shift+R / Cmd+Shift+R)
+
+**Note:** Form submission CORS errors are normal and expected (uses `no-cors` mode).
 
 ---
 
