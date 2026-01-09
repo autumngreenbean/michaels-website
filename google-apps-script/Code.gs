@@ -43,7 +43,7 @@ function installTrigger() {
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
   
-  // Install new trigger
+  // Install new trigger for future edits only
   ScriptApp.newTrigger('onSheetEdit')
     .forSpreadsheet(SpreadsheetApp.getActive())
     .onEdit()
@@ -52,22 +52,23 @@ function installTrigger() {
   SpreadsheetApp.getUi().alert(
     'Trigger Installed!',
     'The website will now automatically update when you edit the sheet.\n\n' +
-    'Note: Updates may take 2-3 minutes to appear on the live site.',
+    'Run "updateGitHubFile" manually to push the current data to the website right now.',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
 
 /**
- * Called automatically when sheet is edited
+ * Called automatically when sheet is edited (with debouncing)
  */
 function onSheetEdit(e) {
-  // Debounce - wait a few seconds for multiple edits
-  Utilities.sleep(3000);
+  // Debounce - wait 5 seconds for multiple edits, then update
+  Utilities.sleep(5000);
   
   try {
     updateGitHubFile();
   } catch (error) {
-    console.error('Error updating GitHub:', error);
+    console.error('Auto-update failed:', error);
+    // Don't show error to user during auto-update
   }
 }
 
