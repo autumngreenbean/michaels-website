@@ -1,11 +1,5 @@
-const portfolioItems = [
-  { id: 'zpt7ffA5-Wc', title: 'Drum Set senior recital Mixed' },
-  { id: '6dyFDNnSiY4', title: 'Laverne Walk' },
-  { id: '11KM_ZOdqhA', title: 'White Christmas - The Rob Scheps Quartet' },
-  { id: 'BOV5sTbQxkQ', title: 'Para Volar' },
-  { id: 'P2xUt77qvDI', title: 'Lullaby in Blue (Concert Choir); MWC Concert' },
-  { id: 'aOg7lmnAd5E', title: 'The Song Is You' }
-];
+let portfolioItems = [];
+let discographyItems = [];
 
 const canvas = document.getElementById('cdCanvas');
 const ctx = canvas.getContext('2d');
@@ -271,7 +265,74 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
 
-// Initialize
-window.lastSelectedIndex = -1;
-updateContent(0);
-render();
+// Initialize and load data
+async function initializePortfolio() {
+  try {
+    const data = await window.dataService.getAllData();
+    
+    // Load videos
+    if (data.videos && data.videos.length > 0) {
+      portfolioItems = data.videos;
+    } else {
+      // Fallback to default videos
+      portfolioItems = window.dataService.getDefaultData().videos;
+    }
+    
+    // Load discography
+    if (data.discography && data.discography.length > 0) {
+      discographyItems = data.discography;
+      updateDiscography();
+    }
+    
+    // Start rendering
+    window.lastSelectedIndex = -1;
+    updateContent(0);
+    render();
+  } catch (error) {
+    console.error('Error initializing portfolio:', error);
+    // Use default data on error
+    const defaultData = window.dataService.getDefaultData();
+    portfolioItems = defaultData.videos;
+    discographyItems = defaultData.discography;
+    updateDiscography();
+    window.lastSelectedIndex = -1;
+    updateContent(0);
+    render();
+  }
+}
+
+// Update discography section with data from Google Sheets
+function updateDiscography() {
+  const discographyList = document.querySelector('.discography-list');
+  if (!discographyList || !discographyItems.length) return;
+  
+  discographyList.innerHTML = '';
+  
+  discographyItems.forEach(album => {
+    const albumItem = document.createElement('div');
+    albumItem.className = 'album-item';
+    
+    const title = document.createElement('div');
+    title.className = 'album-title';
+    title.textContent = album.title;
+    
+    const artist = document.createElement('div');
+    artist.className = 'album-artist';
+    artist.textContent = album.association || album.artist || '';
+    
+    const year = document.createElement('div');
+    year.className = 'album-year';
+    year.textContent = album.year;
+    
+    albumItem.appendChild(title);
+    if (album.association || album.artist) {
+      albumItem.appendChild(artist);
+    }
+    albumItem.appendChild(year);
+    
+    discographyList.appendChild(albumItem);
+  });
+}
+
+// Initialize when page loads
+initializePortfolio();

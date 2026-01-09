@@ -445,60 +445,9 @@
 
 
 
-  <script>
-    const nav = document.getElementById("navbar");
-    const splashHeight = document.querySelector(".splash").offsetHeight;
-
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > splashHeight - 50) {
-        nav.classList.add("scrolled");
-      } else {
-        nav.classList.remove("scrolled");
-      }
-    });
-
-    // Form validation and submission
-    const contactForm = document.getElementById('contactForm');
-    
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Clear previous errors
-      document.querySelectorAll('.form-group').forEach(group => {
-        group.classList.remove('error');
-      });
-      
-      let isValid = true;
-      
-      // Validate name
-      const name = document.getElementById('name');
-      if (!name.value.trim()) {
-        name.closest('.form-group').classList.add('error');
-        isValid = false;
-      }
-      
-      // Validate email
-      const email = document.getElementById('email');
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email.value.trim() || !emailRegex.test(email.value)) {
-        email.closest('.form-group').classList.add('error');
-        isValid = false;
-      }
-      
-      // Validate instrument
-      const instrument = document.getElementById('instrument');
-      if (!instrument.value) {
-        instrument.closest('.form-group').classList.add('error');
-        isValid = false;
-      }
-      
-      if (isValid) {
-        // Here you would typically send the form data to a server
-        alert('Thank you for your message! I will get back to you soon.');
-        contactForm.reset();
-      }
-    });
-  </script>
+  <script src="js/config.js"></script>
+  <script src="js/data-service.js"></script>
+  <script src="js/index.js"></script>
 
 </body>
 </html>
