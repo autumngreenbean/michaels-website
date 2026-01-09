@@ -6,18 +6,132 @@
  * 2. Delete any existing code and paste this entire file
  * 3. Save the script
  * 4. Click "Run" > "initializeSheets" to set up the sheet structure automatically
- * 5. Click "Deploy" > "New deployment"
- * 6. Select type: "Web app"
- * 7. Execute as: "Me"
- * 8. Who has access: "Anyone"
- * 9. Click "Deploy" and copy the Web App URL
- * 10. Paste that URL into config.js in your website
+ * 5. Go to Project Settings (gear icon) > Script Properties
+ * 6. Add property: GITHUB_TOKEN = [Your GitHub Personal Access Token]
+ * 7. Add property: GITHUB_REPO = autumngreenbean/michaels-website
+ * 8. Click "Deploy" > "New deployment"
+ * 9. Select type: "Web app"
+ * 10. Execute as: "Me"
+ * 11. Who has access: "Anyone"
+ * 12. Click "Deploy" and copy the Web App URL
+ * 13. Paste that URL into config.js in your website
  * 
- * SHEET STRUCTURE (auto-created by initializeSheets function):
- * - Tab 1: "Biography Discography Events Video Links" - Main content
- * - Tab 2: "CONTACT SUBMISSIONS" - Form submissions (contact form data will be written here)
- * - Tab 3: "EVENTS" - Event listings
+ * AUTOMATIC UPDATES:
+ * - Whenever you edit the sheet, it automatically updates the website JSON file
+ * - Install an onEdit trigger (Run > installTrigger) to enable automatic updates
  */
+
+/**
+ * Configuration - uses Script Properties for security
+ */
+function getConfig() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  return {
+    githubToken: scriptProperties.getProperty('GITHUB_TOKEN'),
+    githubRepo: scriptProperties.getProperty('GITHUB_REPO') || 'autumngreenbean/michaels-website',
+    githubBranch: 'main',
+    githubFilePath: 'data/content.json'
+  };
+}
+
+/**
+ * Install trigger to auto-update GitHub on sheet edit
+ * Run this function once: Run > installTrigger
+ */
+function installTrigger() {
+  // Delete existing triggers
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  
+  // Install new trigger
+  ScriptApp.newTrigger('onSheetEdit')
+    .forSpreadsheet(SpreadsheetApp.getActive())
+    .onEdit()
+    .create();
+  
+  SpreadsheetApp.getUi().alert(
+    'Trigger Installed!',
+    'The website will now automatically update when you edit the sheet.\n\n' +
+    'Note: Updates may take 2-3 minutes to appear on the live site.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Called automatically when sheet is edited
+ */
+function onSheetEdit(e) {
+  // Debounce - wait a few seconds for multiple edits
+  Utilities.sleep(3000);
+  
+  try {
+    updateGitHubFile();
+  } catch (error) {
+    console.error('Error updating GitHub:', error);
+  }
+}
+
+/**
+ * Update the JSON file on GitHub with current sheet data
+ * Can also be run manually: Run > updateGitHubFile
+ */
+function updateGitHubFile() {
+  const config = getConfig();
+  
+  if (!config.githubToken) {
+    throw new Error('GitHub token not configured. Add GITHUB_TOKEN to Script Properties.');
+  }
+  
+  // Get all data from sheets
+  const data = getAllData();
+  
+  // Get current file from GitHub to get its SHA
+  const getUrl = `https://api.github.com/repos/${config.githubRepo}/contents/${config.githubFilePath}`;
+  const getOptions = {
+    method: 'get',
+    headers: {
+      'Authorization': 'token ' + config.githubToken,
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    muteHttpExceptions: true
+  };
+  
+  const getResponse = UrlFetchApp.fetch(getUrl, getOptions);
+  const getResult = JSON.parse(getResponse.getContentText());
+  
+  // Update file on GitHub
+  const putUrl = `https://api.github.com/repos/${config.githubRepo}/contents/${config.githubFilePath}`;
+  const content = Utilities.base64Encode(JSON.stringify(data, null, 2));
+  
+  const putPayload = {
+    message: 'Auto-update content from Google Sheets',
+    content: content,
+    branch: config.githubBranch,
+    sha: getResult.sha
+  };
+  
+  const putOptions = {
+    method: 'put',
+    headers: {
+      'Authorization': 'token ' + config.githubToken,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    payload: JSON.stringify(putPayload),
+    muteHttpExceptions: true
+  };
+  
+  const putResponse = UrlFetchApp.fetch(putUrl, putOptions);
+  const putResult = JSON.parse(putResponse.getContentText());
+  
+  if (putResponse.getResponseCode() === 200) {
+    console.log('✅ GitHub file updated successfully!');
+    return { success: true, message: 'Content updated on website' };
+  } else {
+    console.error('GitHub API Error:', putResult);
+    throw new Error('Failed to update GitHub: ' + putResult.message);
+  }
+}
 
 /**
  * Run this function ONCE to automatically set up your sheet structure

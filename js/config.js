@@ -11,14 +11,12 @@
  */
 
 const CONFIG = {
-  // Replace this with your deployed Google Apps Script Web App URL
-  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzjB5CXwU_k9RVgpf8FXb91JRfqrx3Q8R0_6gbcpWU4HSJKciXVAsyJebuWCHxj9XUT/exec',
+  // Apps Script URL (only used for contact form submissions now)
+  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwbQ7YYLkiXCfrYL5HJI2CQh4R0WOPVwmhYFniLag9HW4Ldd2Ko4oGEysMDztLO2sgH/exec',
   
-  // Cache duration in milliseconds (5 minutes default)
-  CACHE_DURATION: 5 * 60 * 1000,
-  
-  // Enable/disable Google Sheets integration
-  USE_GOOGLE_SHEETS: true
+  // Cache duration in milliseconds (5 minutes)
+  // Website now loads from fast static JSON, updated automatically by Google Sheets!
+  CACHE_DURATION: 5 * 60 * 1000
 };
 
 // Export for use in other files

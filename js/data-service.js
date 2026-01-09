@@ -1,6 +1,6 @@
 /**
  * Data fetching service for Michael Rodenkirch Website
- * Handles all communication with Google Sheets via Apps Script
+ * Fetches from static JSON file (updated automatically by Google Sheets)
  */
 
 class DataService {
@@ -23,7 +23,7 @@ class DataService {
   }
 
   /**
-   * Fetch all data from Google Sheets
+   * Fetch all data from static JSON file (fast!)
    */
   async getAllData() {
     // Return cached data if valid
@@ -32,25 +32,18 @@ class DataService {
       return this.cache.data;
     }
 
-    // If Google Sheets is disabled, return default data
-    if (!CONFIG.USE_GOOGLE_SHEETS) {
-      console.log('Google Sheets integration disabled, using default data');
-      return this.getDefaultData();
-    }
-
     try {
-      console.log('Fetching data from Google Sheets...');
-      const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=getAllData`);
+      console.log('Fetching data from static JSON file...');
+      
+      // Fetch from static JSON file with cache-busting
+      const cacheBuster = Date.now();
+      const response = await fetch(`/data/content.json?v=${cacheBuster}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
 
       // Update cache
       this.cache.data = data;
@@ -59,7 +52,7 @@ class DataService {
       console.log('Data fetched successfully:', data);
       return data;
     } catch (error) {
-      console.error('Error fetching data from Google Sheets:', error);
+      console.error('Error fetching data from JSON file:', error);
       console.log('Falling back to default data');
       return this.getDefaultData();
     }
@@ -69,8 +62,9 @@ class DataService {
    * Submit contact form to Google Sheets
    */
   async submitContactForm(formData) {
-    if (!CONFIG.USE_GOOGLE_SHEETS) {
-      console.log('Google Sheets integration disabled');
+    // Contact forms still use Apps Script
+    if (!CONFIG.GOOGLE_SCRIPT_URL) {
+      console.log('Apps Script URL not configured');
       return {
         success: false,
         message: 'Form submission is currently disabled'
