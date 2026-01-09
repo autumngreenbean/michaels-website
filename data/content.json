@@ -1,38 +1,89 @@
 {
   "biography": {
-    "text": "Michael Rodenkirch is a drummer, arranger, composer, and educator based in Portland, OR. He graduated from the University of North Texas in the winter of 2024 with a Bachelor of Arts degree in Music with a minor in History. Michael has a plethora of playing experience playing anything from musicals to playing jazz festivals. He has studied with many great musicians including Alan Jones, Quincy Davis, Richard DeRosa, and Chuck Israels. Since graduating, Michael has played as a member of the Chuck Israels trio and the Chuck Israels Orchestra. Through that experience and others, Michael has shared the stage playing with Portland legends such as Randy Porter, Joe Bagg, David Evans, Paul Mazzio, George Colligan, Darrell Grant, Kerry Politzer, Quinn Walker, Kiran Raphael, Wyatt Button, David Barber, and many more. As an educator, Michael has taught private lessons for 8 years. He teaches drum set, piano, guitar, music theory, and composition. He currently teaches at Lakeridge High School and Grant High School as a rhythm section coach."
+    "text": "BEEEP!!!! Michael Rodenkirch is a drummer, arranger, composer, and educator based in Portland, OR. He graduated from the University of North Texas in the winter of 2024 with a Bachelor of Arts degree in Music with a minor in History. Michael has a plethora of playing experience playing anything from musicals to playing jazz festivals. He has studied with many great musicians including Alan Jones, Quincy Davis, Richard DeRosa, and Chuck Israels. Since graduating, Michael has played as a member of the Chuck Israels trio and the Chuck Israels Orchestra. Through that experience and others, Michael has shared the stage playing with Portland legends such as Randy Porter, Joe Bagg, David Evans, Paul Mazzio, George Colligan, Darrell Grant, Kerry Politzer, Quinn Walker, Kiran Raphael, Wyatt Button, David Barber, and many more. As an educator, Michael has taught private lessons for 8 years. He teaches drum set, piano, guitar, music theory, and composition. He currently teaches at Lakeridge High School and Grant High School as a rhythm section coach."
   },
   "discography": [
-    {"title": "Live at the Churchill School", "year": "2021", "association": "Rob Scheps and the TBA Band"},
-    {"title": "Just Us, Just We", "year": "2021", "association": "Shaymus Hanlin Quartet"},
-    {"title": "M.J. LIVE! Volume 2 (Trio Sessions)", "year": "2023", "association": "M.J. Johnston"},
-    {"title": "Introducing the Jonathan Arcangel Quartet", "year": "2023", "association": "Jonathan Arcangel"},
-    {"title": "The Stuff of Dreams", "year": "2024", "association": "M.J. Johnston"},
-    {"title": "Live at Blue Butler", "year": "2025", "association": "Wyatt Button"}
+    {
+      "title": "Live at the Churchill School",
+      "year": "2021",
+      "association": "Rob Scheps and the TBA Band"
+    },
+    {
+      "title": "Just Us, Just We",
+      "year": "2021",
+      "association": "Shaymus Hanlin Quartet"
+    },
+    {
+      "title": "M.J. LIVE! Volume 2 (Trio Sessions)",
+      "year": "2023",
+      "association": "M.J. Johnston"
+    },
+    {
+      "title": "Introducing the Jonathan Arcangel Quartet",
+      "year": "2023",
+      "association": "Jonathan Arcangel"
+    },
+    {
+      "title": "The Stuff of Dreams",
+      "year": "2024",
+      "association": "M.J. Johnston"
+    },
+    {
+      "title": "Live at Blue Butler",
+      "year": "2025",
+      "association": "Wyatt Button"
+    },
+    {
+      "title": "Blue Butter Ball",
+      "year": "2026",
+      "association": "Autumn Green"
+    }
   ],
   "events": [
     {
       "title": "SUNDAY AFTERNOON JAZZ",
       "location": "FOXTROT",
-      "date": "JULY 13",
-      "time": "4PM",
+      "date": "July 13",
+      "time": "4:00 PM",
       "notes": ""
     },
     {
       "title": "SHAYMUS HAMLIN QUARTET",
       "location": "1905",
-      "date": "AUGUST 15",
-      "time": "10:15PM",
+      "date": "August 15",
+      "time": "10:15 PM",
       "notes": ""
     }
   ],
   "videos": [
-    {"id": "zpt7ffA5-Wc", "title": "Drum Set senior recital Mixed"},
-    {"id": "6dyFDNnSiY4", "title": "Laverne Walk"},
-    {"id": "11KM_ZOdqhA", "title": "White Christmas - The Rob Scheps Quartet"},
-    {"id": "BOV5sTbQxkQ", "title": "Para Volar"},
-    {"id": "P2xUt77qvDI", "title": "Lullaby in Blue (Concert Choir); MWC Concert"},
-    {"id": "aOg7lmnAd5E", "title": "The Song Is You"}
+    {
+      "id": "YouTube Video ID",
+      "title": "Video Title"
+    },
+    {
+      "id": "zpt7ffA5-Wc",
+      "title": "Drum Set senior recital Mixed"
+    },
+    {
+      "id": "6dyFDNnSiY4",
+      "title": "Laverne Walk"
+    },
+    {
+      "id": "11KM_ZOdqhA",
+      "title": "White Christmas - The Rob Scheps Quartet"
+    },
+    {
+      "id": "BOV5sTbQxkQ",
+      "title": "Para Volar"
+    },
+    {
+      "id": "P2xUt77qvDI",
+      "title": "Lullaby in Blue (Concert Choir); MWC Concert"
+    },
+    {
+      "id": "aOg7lmnAd5E",
+      "title": "The Song Is You"
+    }
   ],
-  "timestamp": "2026-01-09T00:00:00.000Z"
+  "timestamp": "2026-01-09T04:02:54.834Z"
 }
