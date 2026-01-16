@@ -5,3 +5,5 @@ Modular template enabling client-side modifications via custom pipeline Google S
 Localized JSON-based data storage for optimized content fetching. 
 
 Stylized Portfolio page with Java-based interactive objects that can be modified, added, and deleted with client-side edits. 
+
+michaelrodenkirch.com
