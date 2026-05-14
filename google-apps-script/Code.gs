@@ -565,6 +565,7 @@ function submitContactForm(data) {
   let notificationStatus = { success: true, recipients: [] };
   try {
     notificationStatus = sendContactSubmissionNotification(submission, config.notificationEmail);
+    logEmailAttempt(submission, config.notificationEmail, true);
   } catch (error) {
     notificationStatus = {
       success: false,
@@ -572,6 +573,7 @@ function submitContactForm(data) {
       message: error.toString()
     };
     console.error('Contact notification email failed:', error);
+    logEmailAttempt(submission, config.notificationEmail, false, error.toString());
   }
 
   console.log('Contact submission processed:', {
@@ -588,6 +590,12 @@ function submitContactForm(data) {
 
 /**
  * Send an email notification when a new contact form is submitted.
+ * 
+ * IMPORTANT: This email is sent FROM the Google Account that owns the Apps Script
+ * (the account you used to deploy). It should appear as:
+ *   From: [Your Google Account Email]
+ * If you deployed with a different account than autumnjingg@gmail.com,
+ * emails may go to spam. Check spam folder or forward/delegate the script to the correct account.
  */
 function sendContactSubmissionNotification(submission, recipientEmail) {
   const recipients = normalizeRecipientEmails(recipientEmail);
@@ -626,17 +634,20 @@ function sendContactSubmissionNotification(submission, recipientEmail) {
     safe(submission.message)
   ];
 
-  const emailOptions = {
-    to: recipients.join(','),
-    subject: subject,
-    body: bodyLines.join('\n')
-  };
+  const emailBody = bodyLines.join('\n');
+  const recipientList = recipients.join(',');
 
+  const emailOptions = {};
   if (submission.email && isLikelyEmail(submission.email)) {
     emailOptions.replyTo = submission.email;
   }
 
-  MailApp.sendEmail(emailOptions);
+  try {
+    MailApp.sendEmail(recipientList, subject, emailBody, emailOptions);
+    console.log('Email sent successfully to:', recipientList);
+  } catch (sendError) {
+    throw new Error('MailApp.sendEmail() failed: ' + sendError.toString());
+  }
 
   return {
     success: true,
@@ -696,6 +707,35 @@ function testNotificationEmail() {
   );
 
   return result;
+}
+
+/**
+ * Log email send attempt to EMAIL_AUDIT sheet for delivery troubleshooting.
+ */
+function logEmailAttempt(submission, recipients, success, errorMessage = null) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let auditSheet = ss.getSheetByName('EMAIL_AUDIT');
+    
+    // Create sheet if it doesn't exist
+    if (!auditSheet) {
+      auditSheet = ss.insertSheet('EMAIL_AUDIT');
+      auditSheet.appendRow(['Timestamp', 'Sender Email', 'Recipients', 'Subject', 'Status', 'Error Message']);
+      auditSheet.setFrozenRows(1);
+    }
+    
+    const timestamp = new Date().toLocaleString();
+    const submitterEmail = (submission.email || 'unknown').toString().trim();
+    const recipientList = Array.isArray(recipients) ? recipients.join('; ') : recipients;
+    const subject = `New contact form submission: ${(submission.name || 'unknown').toString().trim()}`;
+    const status = success ? 'SENT' : 'FAILED';
+    const error = errorMessage ? errorMessage.toString() : '';
+    
+    auditSheet.appendRow([timestamp, submitterEmail, recipientList, subject, status, error]);
+  } catch (auditError) {
+    console.error('Failed to log email attempt:', auditError);
+    // Don't throw—audit logging failure should not block anything
+  }
 }
 
 /**
