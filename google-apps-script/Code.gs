@@ -9,20 +9,22 @@
  * 5. Go to Project Settings (gear icon) > Script Properties
  * 6. Add property: GITHUB_TOKEN = [Your GitHub Personal Access Token]
  * 7. Add property: GITHUB_REPO = autumngreenbean/michaels-website
- * 8. (Optional) Add property: NOTIFICATION_EMAIL = michaelrodenkirch@gmail.com
- *    If omitted, notifications default to michaelrodenkirch@gmail.com.
- * 9. Run "testNotificationEmail" once to authorize MailApp and verify delivery.
- *    If you changed scopes/functions, redeploy the web app after saving.
- * 10. Click "Deploy" > "New deployment"
- * 11. Select type: "Web app"
- * 12. Execute as: "Me"
- * 13. Who has access: "Anyone"
- * 14. Click "Deploy" and copy the Web App URL
- * 15. Paste that URL into config.js in your website
+ * 8. (Optional) Add property: NOTIFICATION_EMAIL = [recipient email]
+ *    If omitted, notifications default to autumnjingg@gmail.com
+ * 9. Run "authorizeMailApp" and APPROVE the permission popup when it appears
+ *    - Look for permission dialog in your browser
+ *    - Click "Review permissions" > select account > "Allow"
+ *    - If no popup: check browser popup blocker settings
+ * 10. Run "testMailAppSimple" to verify email sending works
+ * 11. Check your inbox and spam folder for test email
+ * 12. Click "Deploy" > "Manage deployments" and create NEW deployment version
+ * 13. Set deployment to: Execute as: "Me" | Access: "Anyone"
+ * 14. Copy the NEW Web App URL
+ * 15. Paste that URL into config.js on your website
  * 
  * AUTOMATIC UPDATES:
  * - Whenever you edit the sheet, it automatically updates the website JSON file
- * - Install an onEdit trigger (Run > installTrigger) to enable automatic updates
+ * - Run installTrigger to enable automatic updates on sheet edits
  */
 
 /**
@@ -37,7 +39,7 @@ function getConfig() {
     githubRepo: scriptProperties.getProperty('GITHUB_REPO') || 'autumngreenbean/michaels-website',
     githubBranch: 'main',
     githubFilePath: 'data/content.json',
-    notificationEmail: (configuredNotificationEmail || 'autumnjingg@gmail.com').trim()
+    notificationEmail: (configuredNotificationEmail || 'michaelrodenkirch@gmail.com').trim()
   };
 }
 
@@ -684,29 +686,140 @@ function isLikelyEmail(value) {
 }
 
 /**
+ * Authorize MailApp by requesting send_mail permission.
+ * CRITICAL: When you click Run > authorizeMailApp:
+ * 1. Look for a popup asking for permissions (usually top right)
+ * 2. Click "Review permissions" or similar
+ * 3. Select your Google account
+ * 4. Click "Allow" on the permission screen
+ * 5. If no popup appears, check browser settings for blocked popups
+ * 6. After authorization succeeds, redeploy the web app
+ */
+function authorizeMailApp() {
+  try {
+    console.log('Attempting to authorize MailApp with send_mail scope...');
+    
+    // Request permission by actually sending a test email
+    // This is more reliable than just checking quota
+    const testRecipient = Session.getActiveUser().getEmail();
+    const testSubject = 'Authorization Test - Michael Rodenkirch Apps Script';
+    const testBody = 'This email confirms that MailApp authorization succeeded.';
+    
+    MailApp.sendEmail(testRecipient, testSubject, testBody);
+    console.log('Authorization successful - test email sent to:', testRecipient);
+    
+    SpreadsheetApp.getUi().alert(
+      'Authorization Granted!',
+      'MailApp send_mail permission has been granted.\n\n' +
+      'A test email was sent to: ' + testRecipient + '\n\n' +
+      'Next steps:\n' +
+      '1. Check your inbox for the test email\n' +
+      '2. Go to Apps Script > Deploy > Manage deployments\n' +
+      '3. Click the web app deployment\n' +
+      '4. Click the 3-dot menu and select "Create new version"\n' +
+      '5. Or redeploy it as a new version to include the new scope\n' +
+      '6. Then test form submissions\n\n' +
+      'After deployment, run testMailAppSimple() to verify.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    console.error('Authorization error:', error);
+    SpreadsheetApp.getUi().alert(
+      'ERROR - Authorization Not Granted',
+      'Did you see a permission popup and click "Allow"?\n\n' +
+      'If no popup appeared:\n' +
+      '- Check your browser settings for blocked popups\n' +
+      '- Try a different browser\n' +
+      '- Disable popup blockers\n\n' +
+      'Error: ' + error.toString(),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Simple diagnostic test - run this AFTER authorizing to check step-by-step where it fails.
+ */
+function testMailAppSimple() {
+  try {
+    console.log('Step 1: Getting config...');
+    const config = getConfig();
+    console.log('Config loaded:', config.notificationEmail);
+    
+    console.log('Step 2: Normalizing email...');
+    const recipients = normalizeRecipientEmails(config.notificationEmail);
+    console.log('Recipients:', recipients);
+    
+    if (recipients.length === 0) {
+      SpreadsheetApp.getUi().alert('ERROR: No valid recipients configured.');
+      return;
+    }
+    
+    console.log('Step 3: Checking mail quota...');
+    const quota = MailApp.getRemainingDailyQuota();
+    console.log('Remaining quota:', quota);
+    
+    if (quota <= 0) {
+      SpreadsheetApp.getUi().alert('ERROR: MailApp quota exhausted.');
+      return;
+    }
+    
+    console.log('Step 4: Sending test email...');
+    const recipient = recipients[0];
+    const subject = 'TEST EMAIL from Michael Rodenkirch Apps Script';
+    const body = 'This is a test email to verify MailApp is working.\n\nIf you receive this, email notifications are functional.';
+    
+    MailApp.sendEmail(recipient, subject, body);
+    console.log('SUCCESS: Email sent to:', recipient);
+    
+    SpreadsheetApp.getUi().alert(
+      'SUCCESS',
+      'Test email sent to: ' + recipient + '\n\nCheck your inbox (and spam folder).',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    console.error('ERROR at some step:', error);
+    SpreadsheetApp.getUi().alert(
+      'ERROR',
+      'Failed: ' + error.toString(),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
  * Run manually to authorize MailApp and verify notification delivery.
  */
 function testNotificationEmail() {
-  const config = getConfig();
-  const testSubmission = {
-    name: 'Test Submission',
-    email: 'noreply@example.com',
-    instrument: 'Drums',
-    inquiryType: 'General Inquiry',
-    message: 'This is a test email from testNotificationEmail().',
-    timestamp: new Date()
-  };
+  try {
+    const config = getConfig();
+    const testSubmission = {
+      name: 'Test Submission',
+      email: 'noreply@example.com',
+      instrument: 'Drums',
+      inquiryType: 'General Inquiry',
+      message: 'This is a test email from testNotificationEmail().',
+      timestamp: new Date()
+    };
 
-  const result = sendContactSubmissionNotification(testSubmission, config.notificationEmail);
-  console.log('Test notification result:', result);
+    const result = sendContactSubmissionNotification(testSubmission, config.notificationEmail);
+    console.log('Test notification result:', result);
 
-  SpreadsheetApp.getUi().alert(
-    'Notification test sent',
-    `Result: ${JSON.stringify(result)}`,
-    SpreadsheetApp.getUi().ButtonSet.OK
-  );
+    SpreadsheetApp.getUi().alert(
+      'Notification test sent',
+      `Result: ${JSON.stringify(result)}`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
 
-  return result;
+    return result;
+  } catch (error) {
+    console.error('testNotificationEmail error:', error);
+    SpreadsheetApp.getUi().alert(
+      'ERROR in testNotificationEmail',
+      error.toString(),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
 }
 
 /**

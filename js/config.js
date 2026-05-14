@@ -12,7 +12,7 @@
 
 const CONFIG = {
   // Apps Script URL (only used for contact form submissions now)
-  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyR891IPYOqbJ5hvfGbWRtRAHVJDFZnASPoUb8lxxyUs_8-jf_QX5p3DAtedpS_IyQ-/exec',
+  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxZ1ShuJG9231u0bWHU5QssIuEHgN5DVjHFEorQ_SEt-t6IBbfIh9laomeuCz2GF6vC/exec',
   
   // Cache duration in milliseconds (5 minutes)
   // Website now loads from fast static JSON, updated automatically by Google Sheets!
