@@ -11,12 +11,14 @@
  * 7. Add property: GITHUB_REPO = autumngreenbean/michaels-website
  * 8. (Optional) Add property: NOTIFICATION_EMAIL = michaelrodenkirch@gmail.com
  *    If omitted, notifications default to michaelrodenkirch@gmail.com.
- * 9. Click "Deploy" > "New deployment"
- * 10. Select type: "Web app"
- * 11. Execute as: "Me"
- * 12. Who has access: "Anyone"
- * 13. Click "Deploy" and copy the Web App URL
- * 14. Paste that URL into config.js in your website
+ * 9. Run "testNotificationEmail" once to authorize MailApp and verify delivery.
+ *    If you changed scopes/functions, redeploy the web app after saving.
+ * 10. Click "Deploy" > "New deployment"
+ * 11. Select type: "Web app"
+ * 12. Execute as: "Me"
+ * 13. Who has access: "Anyone"
+ * 14. Click "Deploy" and copy the Web App URL
+ * 15. Paste that URL into config.js in your website
  * 
  * AUTOMATIC UPDATES:
  * - Whenever you edit the sheet, it automatically updates the website JSON file
@@ -28,12 +30,14 @@
  */
 function getConfig() {
   const scriptProperties = PropertiesService.getScriptProperties();
+  const configuredNotificationEmail = scriptProperties.getProperty('NOTIFICATION_EMAIL');
+
   return {
     githubToken: scriptProperties.getProperty('GITHUB_TOKEN'),
     githubRepo: scriptProperties.getProperty('GITHUB_REPO') || 'autumngreenbean/michaels-website',
     githubBranch: 'main',
     githubFilePath: 'data/content.json',
-    notificationEmail: scriptProperties.getProperty('NOTIFICATION_EMAIL') || 'autumnjingg@gmail.com'
+    notificationEmail: (configuredNotificationEmail || 'autumnjingg@gmail.com').trim()
   };
 }
 
@@ -558,15 +562,27 @@ function submitContactForm(data) {
   ]);
 
   // Send notification email after save. Failures are logged but do not block submissions.
+  let notificationStatus = { success: true, recipients: [] };
   try {
-    sendContactSubmissionNotification(submission, config.notificationEmail);
+    notificationStatus = sendContactSubmissionNotification(submission, config.notificationEmail);
   } catch (error) {
+    notificationStatus = {
+      success: false,
+      recipients: [],
+      message: error.toString()
+    };
     console.error('Contact notification email failed:', error);
   }
+
+  console.log('Contact submission processed:', {
+    email: submission.email,
+    notificationStatus: notificationStatus
+  });
   
   return {
     success: true,
-    message: 'Form submitted successfully'
+    message: 'Form submitted successfully',
+    notification: notificationStatus
   };
 }
 
@@ -574,8 +590,18 @@ function submitContactForm(data) {
  * Send an email notification when a new contact form is submitted.
  */
 function sendContactSubmissionNotification(submission, recipientEmail) {
-  if (!recipientEmail) {
-    return;
+  const recipients = normalizeRecipientEmails(recipientEmail);
+  if (recipients.length === 0) {
+    return {
+      success: false,
+      recipients: [],
+      message: 'No valid notification recipient configured.'
+    };
+  }
+
+  const remainingQuota = MailApp.getRemainingDailyQuota();
+  if (remainingQuota <= 0) {
+    throw new Error('MailApp daily quota exhausted.');
   }
 
   const submittedAt = Utilities.formatDate(
@@ -600,11 +626,76 @@ function sendContactSubmissionNotification(submission, recipientEmail) {
     safe(submission.message)
   ];
 
-  MailApp.sendEmail({
-    to: recipientEmail,
+  const emailOptions = {
+    to: recipients.join(','),
     subject: subject,
     body: bodyLines.join('\n')
-  });
+  };
+
+  if (submission.email && isLikelyEmail(submission.email)) {
+    emailOptions.replyTo = submission.email;
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  return {
+    success: true,
+    recipients: recipients,
+    quotaRemaining: remainingQuota - 1
+  };
+}
+
+/**
+ * Normalize NOTIFICATION_EMAIL into validated recipient addresses.
+ * Supports comma or semicolon separated lists.
+ */
+function normalizeRecipientEmails(recipientEmail) {
+  if (!recipientEmail) {
+    return [];
+  }
+
+  return recipientEmail
+    .split(/[;,]/)
+    .map(email => email.trim())
+    .filter(email => !!email)
+    .filter(isLikelyEmail);
+}
+
+/**
+ * Lightweight email format check.
+ */
+function isLikelyEmail(value) {
+  if (!value) {
+    return false;
+  }
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString().trim());
+}
+
+/**
+ * Run manually to authorize MailApp and verify notification delivery.
+ */
+function testNotificationEmail() {
+  const config = getConfig();
+  const testSubmission = {
+    name: 'Test Submission',
+    email: 'noreply@example.com',
+    instrument: 'Drums',
+    inquiryType: 'General Inquiry',
+    message: 'This is a test email from testNotificationEmail().',
+    timestamp: new Date()
+  };
+
+  const result = sendContactSubmissionNotification(testSubmission, config.notificationEmail);
+  console.log('Test notification result:', result);
+
+  SpreadsheetApp.getUi().alert(
+    'Notification test sent',
+    `Result: ${JSON.stringify(result)}`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+
+  return result;
 }
 
 /**
