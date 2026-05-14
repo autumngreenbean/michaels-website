@@ -39,7 +39,7 @@ function getConfig() {
     githubRepo: scriptProperties.getProperty('GITHUB_REPO') || 'autumngreenbean/michaels-website',
     githubBranch: 'main',
     githubFilePath: 'data/content.json',
-    notificationEmail: (configuredNotificationEmail || 'michaelrodenkirch@gmail.com').trim()
+    notificationEmail: (configuredNotificationEmail || 'rodenkirch2@gmail.com').trim()
   };
 }
 
