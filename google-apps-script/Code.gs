@@ -9,12 +9,14 @@
  * 5. Go to Project Settings (gear icon) > Script Properties
  * 6. Add property: GITHUB_TOKEN = [Your GitHub Personal Access Token]
  * 7. Add property: GITHUB_REPO = autumngreenbean/michaels-website
- * 8. Click "Deploy" > "New deployment"
- * 9. Select type: "Web app"
- * 10. Execute as: "Me"
- * 11. Who has access: "Anyone"
- * 12. Click "Deploy" and copy the Web App URL
- * 13. Paste that URL into config.js in your website
+ * 8. (Optional) Add property: NOTIFICATION_EMAIL = michaelrodenkirch@gmail.com
+ *    If omitted, notifications default to michaelrodenkirch@gmail.com.
+ * 9. Click "Deploy" > "New deployment"
+ * 10. Select type: "Web app"
+ * 11. Execute as: "Me"
+ * 12. Who has access: "Anyone"
+ * 13. Click "Deploy" and copy the Web App URL
+ * 14. Paste that URL into config.js in your website
  * 
  * AUTOMATIC UPDATES:
  * - Whenever you edit the sheet, it automatically updates the website JSON file
@@ -30,7 +32,8 @@ function getConfig() {
     githubToken: scriptProperties.getProperty('GITHUB_TOKEN'),
     githubRepo: scriptProperties.getProperty('GITHUB_REPO') || 'autumngreenbean/michaels-website',
     githubBranch: 'main',
-    githubFilePath: 'data/content.json'
+    githubFilePath: 'data/content.json',
+    notificationEmail: scriptProperties.getProperty('NOTIFICATION_EMAIL') || 'autumnjingg@gmail.com'
   };
 }
 
@@ -528,26 +531,80 @@ function getEvents() {
  * Submit contact form data to the CONTACT SUBMISSIONS sheet
  */
 function submitContactForm(data) {
+  const config = getConfig();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CONTACT SUBMISSIONS');
   if (!sheet) {
     throw new Error('Sheet "CONTACT SUBMISSIONS" not found');
   }
+
+  const submission = {
+    name: (data.name || '').toString().trim(),
+    email: (data.email || '').toString().trim(),
+    instrument: (data.instrument || '').toString().trim(),
+    inquiryType: (data.inquiryType || '').toString().trim(),
+    message: (data.message || '').toString().trim(),
+    timestamp: new Date()
+  };
   
   // Append new row with form data
   // Columns: Name, Email, Instrument, Inquiry Type, Additional Notes
   sheet.appendRow([
-    data.name || '',
-    data.email || '',
-    data.instrument || '',
-    data.inquiryType || '',
-    data.message || '',
-    new Date().toLocaleString() // Add timestamp
+    submission.name,
+    submission.email,
+    submission.instrument,
+    submission.inquiryType,
+    submission.message,
+    submission.timestamp.toLocaleString() // Add timestamp
   ]);
+
+  // Send notification email after save. Failures are logged but do not block submissions.
+  try {
+    sendContactSubmissionNotification(submission, config.notificationEmail);
+  } catch (error) {
+    console.error('Contact notification email failed:', error);
+  }
   
   return {
     success: true,
     message: 'Form submitted successfully'
   };
+}
+
+/**
+ * Send an email notification when a new contact form is submitted.
+ */
+function sendContactSubmissionNotification(submission, recipientEmail) {
+  if (!recipientEmail) {
+    return;
+  }
+
+  const submittedAt = Utilities.formatDate(
+    submission.timestamp,
+    Session.getScriptTimeZone() || 'America/Los_Angeles',
+    'yyyy-MM-dd HH:mm:ss z'
+  );
+
+  const safe = value => value || '(not provided)';
+  const subject = `New contact form submission: ${safe(submission.name)}`;
+
+  const bodyLines = [
+    'A new contact form was submitted on michaelrodenkirch.com.',
+    '',
+    `Name: ${safe(submission.name)}`,
+    `Email: ${safe(submission.email)}`,
+    `Instrument: ${safe(submission.instrument)}`,
+    `Inquiry Type: ${safe(submission.inquiryType)}`,
+    `Submitted: ${submittedAt}`,
+    '',
+    'Message:',
+    safe(submission.message)
+  ];
+
+  MailApp.sendEmail({
+    to: recipientEmail,
+    subject: subject,
+    body: bodyLines.join('\n')
+  });
 }
 
 /**
