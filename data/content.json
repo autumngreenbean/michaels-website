@@ -46,7 +46,7 @@
       "title": "Chuck Israel's Jazz Orchestra",
       "location": "Jack London",
       "date": "June 4",
-      "time": "10:15 PM",
+      "time": "",
       "notes": ""
     },
     {
@@ -59,7 +59,7 @@
     {
       "title": "Chuck Israel's Jazz Orchestra",
       "location": "Jack London",
-      "date": "",
+      "date": "July 2",
       "time": "",
       "notes": ""
     }
@@ -94,5 +94,5 @@
       "title": "The Song Is You"
     }
   ],
-  "timestamp": "2026-05-15T00:12:21.278Z"
+  "timestamp": "2026-05-15T00:12:33.075Z"
 }
