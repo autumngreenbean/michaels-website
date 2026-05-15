@@ -17,9 +17,13 @@ let currentRotation = 0;
 let animationId;
 let activeIndex = 0;
 let swipeStartX = null;
+let thumbnailRequestToken = 0;
+
+const thumbnailCache = new Map();
 
 const selectionAngle = Math.PI * 1.25;
 const mobileSwipeThreshold = 45;
+const thumbnailQualities = ['maxresdefault', 'sddefault', 'hqdefault', 'mqdefault', 'default'];
 
 // Setup canvas
 function resizeCanvas() {
@@ -105,6 +109,125 @@ function normalizeIndex(index) {
 
 function getRotationForIndex(index) {
   return selectionAngle - (normalizeIndex(index) * getAngleStep());
+}
+
+function extractYouTubeVideoId(input) {
+  if (!input) {
+    return '';
+  }
+
+  const rawValue = input.toString().trim();
+
+  if (!rawValue) {
+    return '';
+  }
+
+  const bareIdMatch = rawValue.match(/^[A-Za-z0-9_-]{11}/);
+  if (bareIdMatch) {
+    return bareIdMatch[0];
+  }
+
+  try {
+    const normalizedUrl = rawValue.startsWith('http') ? rawValue : `https://${rawValue}`;
+    const url = new URL(normalizedUrl);
+    const host = url.hostname.replace(/^www\./, '');
+
+    if (host === 'youtu.be') {
+      return url.pathname.split('/').filter(Boolean)[0] || '';
+    }
+
+    if (host === 'youtube.com' || host === 'm.youtube.com') {
+      const queryId = url.searchParams.get('v');
+      if (queryId) {
+        return queryId;
+      }
+
+      const pathSegments = url.pathname.split('/').filter(Boolean);
+      const shortsIndex = pathSegments.indexOf('shorts');
+      if (shortsIndex >= 0 && pathSegments[shortsIndex + 1]) {
+        return pathSegments[shortsIndex + 1];
+      }
+
+      const embedIndex = pathSegments.indexOf('embed');
+      if (embedIndex >= 0 && pathSegments[embedIndex + 1]) {
+        return pathSegments[embedIndex + 1];
+      }
+    }
+  } catch (error) {
+    console.warn('Unable to parse YouTube video input:', rawValue, error);
+  }
+
+  return rawValue.split('?')[0].split('&')[0].trim();
+}
+
+function normalizePortfolioItem(item) {
+  const normalizedId = extractYouTubeVideoId(item.id);
+  return {
+    ...item,
+    id: normalizedId
+  };
+}
+
+function normalizePortfolioItems(items) {
+  return items
+    .map(normalizePortfolioItem)
+    .filter((item) => item.id);
+}
+
+function getThumbnailUrl(videoId, quality) {
+  return `https://i.ytimg.com/vi/${videoId}/${quality}.jpg`;
+}
+
+function isUsableThumbnail(image, quality) {
+  if (!image.naturalWidth || !image.naturalHeight) {
+    return false;
+  }
+
+  if (quality === 'maxresdefault' || quality === 'sddefault') {
+    return image.naturalWidth > 120;
+  }
+
+  return true;
+}
+
+function probeThumbnail(videoId, quality) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      if (isUsableThumbnail(image, quality)) {
+        resolve(getThumbnailUrl(videoId, quality));
+        return;
+      }
+
+      reject(new Error(`Thumbnail quality unavailable: ${quality}`));
+    };
+    image.onerror = () => reject(new Error(`Thumbnail failed to load: ${quality}`));
+    image.src = getThumbnailUrl(videoId, quality);
+  });
+}
+
+async function resolveThumbnailUrl(videoId) {
+  if (!videoId) {
+    return '';
+  }
+
+  if (thumbnailCache.has(videoId)) {
+    return thumbnailCache.get(videoId);
+  }
+
+  for (const quality of thumbnailQualities) {
+    try {
+      const thumbnailUrl = await probeThumbnail(videoId, quality);
+      thumbnailCache.set(videoId, thumbnailUrl);
+      return thumbnailUrl;
+    } catch (error) {
+      continue;
+    }
+  }
+
+  const fallbackUrl = getThumbnailUrl(videoId, 'default');
+  thumbnailCache.set(videoId, fallbackUrl);
+  return fallbackUrl;
 }
 
 function selectIndex(index, immediate = false) {
@@ -277,16 +400,26 @@ function render() {
 }
 
 // Update content based on selected CD
-function updateContent(index) {
+async function updateContent(index) {
   if (!portfolioItems.length) {
     return;
   }
 
+  const selectedItem = portfolioItems[index];
+
   const portfolioTitle = document.getElementById('portfolioTitle');
   if (portfolioTitle) {
-    portfolioTitle.textContent = portfolioItems[index].title;
+    portfolioTitle.textContent = selectedItem.title;
   }
-  thumbnailImg.src = `https://img.youtube.com/vi/${portfolioItems[index].id}/maxresdefault.jpg`;
+
+  const requestToken = ++thumbnailRequestToken;
+  const thumbnailUrl = await resolveThumbnailUrl(selectedItem.id);
+
+  if (requestToken !== thumbnailRequestToken) {
+    return;
+  }
+
+  thumbnailImg.src = thumbnailUrl;
 }
 
 function updateMobileSelector(index) {
@@ -420,10 +553,10 @@ async function initializePortfolio() {
     
     // Load videos
     if (data.videos && data.videos.length > 0) {
-      portfolioItems = data.videos;
+      portfolioItems = normalizePortfolioItems(data.videos);
     } else {
       // Fallback to default videos
-      portfolioItems = window.dataService.getDefaultData().videos;
+      portfolioItems = normalizePortfolioItems(window.dataService.getDefaultData().videos);
     }
     
     // Load discography
@@ -442,7 +575,7 @@ async function initializePortfolio() {
     console.error('Error initializing portfolio:', error);
     // Use default data on error
     const defaultData = window.dataService.getDefaultData();
-    portfolioItems = defaultData.videos;
+    portfolioItems = normalizePortfolioItems(defaultData.videos);
     discographyItems = defaultData.discography;
     updateDiscography();
     buildMobileSelector();

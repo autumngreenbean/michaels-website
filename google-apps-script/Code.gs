@@ -462,6 +462,24 @@ function getDiscography() {
  * Expected format: Starting at row 25 (after bio section)
  * Columns: B (YouTube Video ID), C (Title/Description)
  */
+function normalizeYouTubeVideoId(value) {
+  if (!value) {
+    return '';
+  }
+
+  const rawValue = value.toString().trim();
+  if (!rawValue) {
+    return '';
+  }
+
+  const bareIdMatch = rawValue.match(/^[A-Za-z0-9_-]{11}/);
+  if (bareIdMatch) {
+    return bareIdMatch[0];
+  }
+
+  return rawValue.split('?')[0].split('&')[0].trim();
+}
+
 function getVideos() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Biography Discography Events Video Links');
   if (!sheet) {
@@ -482,7 +500,7 @@ function getVideos() {
       break;
     }
     
-    const normalizedVideoId = videoId ? videoId.toString().trim() : '';
+    const normalizedVideoId = normalizeYouTubeVideoId(videoId);
     const normalizedTitle = title ? title.toString().trim() : 'Untitled Video';
 
     // Ignore header placeholders if they appear in the sheet.
