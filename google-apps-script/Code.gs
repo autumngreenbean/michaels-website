@@ -468,8 +468,8 @@ function getVideos() {
     throw new Error('Sheet "Biography Discography Events Video Links" not found');
   }
   
-  // Get video data starting from row 25
-  const dataRange = sheet.getRange('B25:C50'); // Adjust range as needed
+  // Skip the header row at 25 and read actual video rows starting at 26.
+  const dataRange = sheet.getRange('B26:C50'); // Adjust range as needed
   const values = dataRange.getValues();
   
   const videos = [];
@@ -482,11 +482,19 @@ function getVideos() {
       break;
     }
     
+    const normalizedVideoId = videoId ? videoId.toString().trim() : '';
+    const normalizedTitle = title ? title.toString().trim() : 'Untitled Video';
+
+    // Ignore header placeholders if they appear in the sheet.
+    if (normalizedVideoId === 'YouTube Video ID' || normalizedTitle === 'Video Title') {
+      continue;
+    }
+
     // Only add if video ID is present
-    if (videoId) {
+    if (normalizedVideoId) {
       videos.push({
-        id: videoId.toString().trim(),
-        title: title ? title.toString().trim() : 'Untitled Video'
+        id: normalizedVideoId,
+        title: normalizedTitle
       });
     }
   }

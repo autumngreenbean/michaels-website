@@ -127,6 +127,10 @@
       display: none;
     }
 
+    .mobile-video-selector {
+      display: none;
+    }
+
     /* --- DISCOGRAPHY SECTION --- */
     .discography-section {
       flex: 1;
@@ -347,6 +351,225 @@
       --cd-shadow-blur: 40;
       --cd-shadow-blur-inner: 20;
     }
+
+    @media (max-width: 960px) {
+      body, html {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      nav {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        padding: 0.75em 1em;
+        border-radius: 24px;
+      }
+
+      nav ul {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.8rem 1rem;
+      }
+
+      nav ul li a {
+        font-size: 0.95rem;
+      }
+
+      .portfolio-content {
+        position: relative;
+        width: min(100%, 760px);
+        height: auto;
+        min-height: 100svh;
+        margin: 0 auto;
+        padding: 96px 20px 24px;
+      }
+
+      .video-container {
+        max-width: none;
+        margin-bottom: 24px;
+      }
+
+      .mobile-video-selector {
+        display: grid;
+        gap: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .mobile-selector-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .mobile-selector-header span {
+        color: #f5f5f5;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .mobile-selector-controls {
+        display: flex;
+        gap: 0.6rem;
+      }
+
+      .mobile-selector-btn {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.7rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .mobile-selector-btn:hover,
+      .mobile-selector-btn:focus-visible {
+        border-color: rgba(255, 255, 255, 0.32);
+      }
+
+      .mobile-selector-list {
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+        padding-bottom: 0.35rem;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .mobile-selector-list::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .mobile-selector-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+      }
+
+      .mobile-selector-item {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: #d8d8d8;
+        border-radius: 999px;
+        padding: 0.75rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        scroll-snap-align: start;
+      }
+
+      .mobile-selector-item.is-active {
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+
+      .discography-section {
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      .album-item:hover {
+        transform: none;
+      }
+
+      .cd-zone {
+        display: none;
+      }
+
+      #cdCanvas {
+        display: none;
+      }
+
+      .scroll-hint {
+        right: 50%;
+        bottom: 16px;
+        transform: translateX(50%);
+        font-size: 0.82rem;
+        padding: 0.45em 1em;
+      }
+
+      .modal-content {
+        width: min(92vw, 900px);
+      }
+
+      .modal-close {
+        top: -14px;
+        right: -6px;
+        width: 52px;
+        height: 52px;
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .portfolio-content {
+        padding: 88px 14px 20px;
+      }
+
+      .play-overlay {
+        width: 72px;
+        height: 72px;
+      }
+
+      .play-overlay::after {
+        border-left-width: 22px;
+        border-top-width: 14px;
+        border-bottom-width: 14px;
+        margin-left: 5px;
+      }
+
+      .discography-header {
+        font-size: 1.3rem;
+      }
+
+      .mobile-selector-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .mobile-selector-controls {
+        width: 100%;
+      }
+
+      .mobile-selector-btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .album-item {
+        padding: 1.1em;
+        border-radius: 16px;
+      }
+
+      .album-title {
+        font-size: 1rem;
+      }
+
+      .album-artist,
+      .album-year {
+        font-size: 0.9rem;
+      }
+
+      .scroll-hint {
+        display: none;
+      }
+
+      .modal-content {
+        width: 94vw;
+        border-radius: 14px;
+      }
+
+      .modal-content iframe {
+        border-radius: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -372,6 +595,17 @@
     <div class="video-container" id="videoContainer">
       <img id="thumbnailImg" src="" alt="Video thumbnail">
       <div class="play-overlay"></div>
+    </div>
+
+    <div class="mobile-video-selector" id="mobileVideoSelector" aria-label="Video selection controls">
+      <div class="mobile-selector-header">
+        <span>Browse videos</span>
+        <div class="mobile-selector-controls">
+          <button type="button" class="mobile-selector-btn" id="mobilePrevBtn" aria-label="Previous video">Previous</button>
+          <button type="button" class="mobile-selector-btn" id="mobileNextBtn" aria-label="Next video">Next</button>
+        </div>
+      </div>
+      <div class="mobile-selector-list" id="mobileSelectorList"></div>
     </div>
 
     <!-- Discography Section -->

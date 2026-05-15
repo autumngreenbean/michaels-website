@@ -8,10 +8,18 @@ const videoContainer = document.getElementById('videoContainer');
 const youtubeModal = document.getElementById('youtubeModal');
 const youtubePlayer = document.getElementById('youtubePlayer');
 const modalClose = document.getElementById('modalClose');
+const mobileSelectorList = document.getElementById('mobileSelectorList');
+const mobilePrevBtn = document.getElementById('mobilePrevBtn');
+const mobileNextBtn = document.getElementById('mobileNextBtn');
 
 let targetRotation = 0;
 let currentRotation = 0;
 let animationId;
+let activeIndex = 0;
+let swipeStartX = null;
+
+const selectionAngle = Math.PI * 1.25;
+const mobileSwipeThreshold = 45;
 
 // Setup canvas
 function resizeCanvas() {
@@ -83,10 +91,46 @@ function drawCD(x, y, radius, isActive, opacity) {
   ctx.restore();
 }
 
+function getAngleStep() {
+  return portfolioItems.length ? (Math.PI * 2) / portfolioItems.length : 0;
+}
+
+function normalizeIndex(index) {
+  if (!portfolioItems.length) {
+    return 0;
+  }
+
+  return (index % portfolioItems.length + portfolioItems.length) % portfolioItems.length;
+}
+
+function getRotationForIndex(index) {
+  return selectionAngle - (normalizeIndex(index) * getAngleStep());
+}
+
+function selectIndex(index, immediate = false) {
+  if (!portfolioItems.length) {
+    return;
+  }
+
+  const normalizedIndex = normalizeIndex(index);
+  activeIndex = normalizedIndex;
+  targetRotation = getRotationForIndex(normalizedIndex);
+
+  if (immediate) {
+    currentRotation = targetRotation;
+  }
+
+  updateContent(normalizedIndex);
+  updateMobileSelector(normalizedIndex);
+}
+
 // Find closest CD to top-left selection point
 function findSelectedIndex() {
-  const selectionAngle = Math.PI * 1.25; // Top-left (225 degrees + 180 = 405 degrees = 45 degrees from right or 1.25π)
-  const angleStep = (Math.PI * 2) / portfolioItems.length;
+  if (!portfolioItems.length) {
+    return 0;
+  }
+
+  const angleStep = getAngleStep();
   
   let minDiff = Infinity;
   let selectedIndex = 0;
@@ -109,6 +153,10 @@ function findSelectedIndex() {
 
 // Render CDs in radial pattern
 function render() {
+  if (!portfolioItems.length) {
+    return;
+  }
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Smooth continuous rotation
@@ -119,7 +167,7 @@ function render() {
   const centerY = canvas.height * 0.5;
   const radius = Math.min(canvas.width, canvas.height) * 0.35;
   const cdRadius = 120;
-  const angleStep = (Math.PI * 2) / portfolioItems.length;
+  const angleStep = getAngleStep();
   
   // Determine which CD is selected (at bottom-left)
   const selectedIndex = findSelectedIndex();
@@ -131,7 +179,6 @@ function render() {
     const y = centerY + Math.sin(angle) * radius;
     
     // Calculate distance from top-left selection point (225 degrees)
-    const selectionAngle = Math.PI * 1.25;
     const normalizedAngle = ((angle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
     let angleDiff = Math.abs(normalizedAngle - selectionAngle);
     if (angleDiff > Math.PI) angleDiff = (Math.PI * 2) - angleDiff;
@@ -221,7 +268,9 @@ function render() {
   const currentSelectedIndex = findSelectedIndex();
   if (window.lastSelectedIndex !== currentSelectedIndex) {
     window.lastSelectedIndex = currentSelectedIndex;
+    activeIndex = currentSelectedIndex;
     updateContent(currentSelectedIndex);
+    updateMobileSelector(currentSelectedIndex);
   }
 
   animationId = requestAnimationFrame(render);
@@ -229,11 +278,82 @@ function render() {
 
 // Update content based on selected CD
 function updateContent(index) {
+  if (!portfolioItems.length) {
+    return;
+  }
+
   const portfolioTitle = document.getElementById('portfolioTitle');
   if (portfolioTitle) {
     portfolioTitle.textContent = portfolioItems[index].title;
   }
   thumbnailImg.src = `https://img.youtube.com/vi/${portfolioItems[index].id}/maxresdefault.jpg`;
+}
+
+function updateMobileSelector(index) {
+  if (!mobileSelectorList) {
+    return;
+  }
+
+  const buttons = mobileSelectorList.querySelectorAll('.mobile-selector-item');
+  buttons.forEach((button, buttonIndex) => {
+    const isActive = buttonIndex === index;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+    if (isActive) {
+      button.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  });
+}
+
+function buildMobileSelector() {
+  if (!mobileSelectorList) {
+    return;
+  }
+
+  mobileSelectorList.innerHTML = '';
+
+  portfolioItems.forEach((item, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'mobile-selector-item';
+    button.textContent = item.title;
+    button.setAttribute('aria-label', `Select video ${index + 1}: ${item.title}`);
+    button.addEventListener('click', () => {
+      selectIndex(index, true);
+    });
+    mobileSelectorList.appendChild(button);
+  });
+
+  updateMobileSelector(activeIndex);
+}
+
+function selectRelative(offset) {
+  selectIndex(activeIndex + offset, true);
+}
+
+function handleSwipeStart(clientX) {
+  swipeStartX = clientX;
+}
+
+function handleSwipeEnd(clientX) {
+  if (swipeStartX === null) {
+    return;
+  }
+
+  const deltaX = clientX - swipeStartX;
+  swipeStartX = null;
+
+  if (Math.abs(deltaX) < mobileSwipeThreshold) {
+    return;
+  }
+
+  if (deltaX < 0) {
+    selectRelative(1);
+    return;
+  }
+
+  selectRelative(-1);
 }
 
 // Scroll handling with freeform rotation - only on right side
@@ -243,6 +363,34 @@ cdZone.addEventListener('wheel', (e) => {
   e.preventDefault();
   targetRotation += (e.deltaY * 0.002);
 }, { passive: false });
+
+videoContainer.addEventListener('touchstart', (e) => {
+  if (!e.touches.length) {
+    return;
+  }
+
+  handleSwipeStart(e.touches[0].clientX);
+}, { passive: true });
+
+videoContainer.addEventListener('touchend', (e) => {
+  if (!e.changedTouches.length) {
+    return;
+  }
+
+  handleSwipeEnd(e.changedTouches[0].clientX);
+}, { passive: true });
+
+if (mobilePrevBtn) {
+  mobilePrevBtn.addEventListener('click', () => {
+    selectRelative(-1);
+  });
+}
+
+if (mobileNextBtn) {
+  mobileNextBtn.addEventListener('click', () => {
+    selectRelative(1);
+  });
+}
 
 // Video click
 videoContainer.addEventListener('click', () => {
@@ -283,10 +431,12 @@ async function initializePortfolio() {
       discographyItems = data.discography;
       updateDiscography();
     }
+
+    buildMobileSelector();
     
     // Start rendering
     window.lastSelectedIndex = -1;
-    updateContent(0);
+    selectIndex(0, true);
     render();
   } catch (error) {
     console.error('Error initializing portfolio:', error);
@@ -295,8 +445,9 @@ async function initializePortfolio() {
     portfolioItems = defaultData.videos;
     discographyItems = defaultData.discography;
     updateDiscography();
+    buildMobileSelector();
     window.lastSelectedIndex = -1;
-    updateContent(0);
+    selectIndex(0, true);
     render();
   }
 }
