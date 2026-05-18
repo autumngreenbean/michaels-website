@@ -43,6 +43,13 @@
       "notes": ""
     },
     {
+      "title": "Quinn Walker Trio",
+      "location": "Farina Bakery",
+      "date": "",
+      "time": "",
+      "notes": ""
+    },
+    {
       "title": "Chuck Israel's Jazz Orchestra",
       "location": "Jack London",
       "date": "June 4",
@@ -66,25 +73,29 @@
   ],
   "videos": [
     {
+      "id": "YouTube Video ID",
+      "title": "Video Title"
+    },
+    {
       "id": "zpt7ffA5-Wc",
       "title": "Drum Set senior recital Mixed"
     },
     {
-      "id": "BB8oJiMQIrw",
+      "id": "BB8oJiMQIrw?si=hkoxVPQRlOvg4Y7T",
       "title": "Warming Trend - Chuck Israels Jazz Orchestra"
     },
     {
-      "id": "evyvSNugxX4",
+      "id": "evyvSNugxX4?si=8k6Qjbwn-22dSY7X",
       "title": "Trading 4's with Gregg Bissonette"
     },
     {
-      "id": "lwFy3xro-s8",
+      "id": "lwFy3xro-s8?si=HFzEiNFR5saIIpml",
       "title": "Chuck Israel's trio with Randy Porter"
     },
     {
-      "id": "_3sv1JG8qBQ",
+      "id": "_3sv1JG8qBQ?si=xexynO2Qh_Y0i38b",
       "title": "Byen Sover by Sigvald Tviet"
     }
   ],
-  "timestamp": "2026-05-15T00:39:33.232Z"
+  "timestamp": "2026-05-18T20:36:38.228Z"
 }
