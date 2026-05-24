@@ -34,36 +34,7 @@
       "association": "Wyatt Button"
     }
   ],
-  "events": [
-    {
-      "title": "Pablo Rivarola Tr?o",
-      "location": "Lulu",
-      "date": "May 27",
-      "time": "8:00 PM",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "June 4",
-      "time": "8:00 PM",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "June 18",
-      "time": "8:00 PM",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "July 2",
-      "time": "8:00 PM",
-      "notes": ""
-    }
-  ],
+  "events": [],
   "videos": [
     {
       "id": "YouTube Video ID",
@@ -90,5 +61,5 @@
       "title": "Byen Sover by Sigvald Tviet"
     }
   ],
-  "timestamp": "2026-05-24T17:43:51.819Z"
+  "timestamp": "2026-05-24T17:43:56.807Z"
 }
