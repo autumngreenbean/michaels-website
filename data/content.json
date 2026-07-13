@@ -36,31 +36,10 @@
   ],
   "events": [
     {
-      "title": "Pablo Rivarola Tr?o",
+      "title": "Pablo Rivarola Trio",
       "location": "Lulu",
       "date": "May 27",
       "time": "",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "June 4",
-      "time": "8:00 PM",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "June 18",
-      "time": "8:00 PM",
-      "notes": ""
-    },
-    {
-      "title": "Chuck Israel's Jazz Orchestra",
-      "location": "Jack London",
-      "date": "July 2",
-      "time": "8:00 PM",
       "notes": ""
     }
   ],
@@ -90,5 +69,5 @@
       "title": "Byen Sover by Sigvald Tviet"
     }
   ],
-  "timestamp": "2026-07-13T22:39:46.565Z"
+  "timestamp": "2026-07-13T22:41:19.545Z"
 }
