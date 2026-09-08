@@ -37,7 +37,7 @@
   "events": [
     {
       "title": "Chuck Israels' Jazz Orchestra",
-      "location": "Lulu",
+      "location": "Jack London",
       "date": "July 15",
       "time": "8:00 PM",
       "notes": ""
@@ -51,7 +51,7 @@
     },
     {
       "title": "Chuck Israels' Jazz Orchestra",
-      "location": "Brickhouse Tavern",
+      "location": "Jack London",
       "date": "July 17",
       "time": "8:00 PM",
       "notes": ""
@@ -101,5 +101,5 @@
       "title": "Chuck Israels 90th Birthday Celebration | Live at The 1905"
     }
   ],
-  "timestamp": "2026-09-08T19:27:15.403Z"
+  "timestamp": "2026-09-08T19:27:22.081Z"
 }
